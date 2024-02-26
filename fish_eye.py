@@ -34,7 +34,6 @@ def process_folder(input_folder, output_folder, distortion, vary_distortion = Fa
         else:
             # call fish function here
             distorted_frame = fish(imgobj, distortion)
-            # type = distorted_frame.dtype
         # write the distorted frame to the output folder
         cv2.imwrite(output_folder + str(iterator) + ".png", distorted_frame)
     
@@ -55,20 +54,20 @@ def process_video(new_video_path, input_video, distortion, fps = 30, vary_distor
         if not ret:
             break
         if vary_distortion:
-            if flag:
+            # vary the distortion coefficient for each frame starting from distortion_value to end_distortion, and then repeat the process
+            if distortion_value < end_distortion and not(flag):
                 distortion_value += distortion_step
-                if distortion_value >= 1:
-                    flag = False
-            else:
+                flag = False
+            elif distortion_value == end_distortion or flag:
                 distortion_value -= distortion_step
-                if distortion_value <= -1:
-                    flag = True
+                flag = True
+                if distortion_value <=-1:
+                    flag = False
         else:
             distortion_value = distortion  # Use fixed distortion value
-
-        distorted_frame = fish(frame, distortion_value)
-        type = distorted_frame.dtype
-            # print("Type: ", type)
+            
+        # call fish function here
+        distorted_frame = fish(imgobj, distortion)
         # write the distorted frame to the new video
         # video.write(distorted_frame)
         cv2.imwrite(new_video_path + str(iterator) + ".png", distorted_frame)
