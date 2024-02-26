@@ -1,2 +1,2 @@
 # fish-eye-simulator
-Convert rectilinear images or videos to fish-eye lenses distortion using opencv
+Convert rectilinear images to fish-eye/wide angle lenses distortion. Also works with videos or image folders. 
