@@ -50,7 +50,7 @@ def process_folder(input_folder, output_folder, distortion, vary_distortion=Fals
         cv2.imwrite(os.path.join(output_folder, f"{iterator}.png"), distorted_frame)
     
 
-def process_video(new_video_path, input_video, distortion, fps = 30, vary_distortion = True, randomize_rgb = False):
+def process_video(new_video_path, input_video, distortion, fps = 30, vary_distortion = False, randomize_rgb = False):
     # use the resolution of the input video
     cap = cv2.VideoCapture(input_video)
     resolution = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
@@ -171,6 +171,17 @@ def parse_args(args = sys.argv[1:]):
                         " You can run with --distortion -0.3."
                         " Note that due to double processing the result will be somewhat distorted.",
                         type=float, default=0.5)
+    # add the variation of distortion argument
+    parser.add_argument("-vary", "--vary_distortion", help="Vary the distortion coefficient over time."
+                        " If this argument is provided, the script will apply a varying distortion coefficient to the input video."
+                        " The distortion coefficient will start at -1, and increase each frame until it reaches 1."
+                        " Then it will decrease each frame until it reaches -1 again."
+                        " The cycle will then repeat.", action="store_true")
+    
+    parser.add_argument("-randomize", "--randomize_rgb", help="Randomize the RGB/BGR order for each frame."
+                        " If this argument is provided, the script will randomize the order of the color channels for each frame in the input video."
+                        " This can be used to create a psychedelic effect.", action="store_true")
+    
     
     return parser.parse_args(args)
 
@@ -193,7 +204,7 @@ if __name__ == "__main__":
     
     # check if argument video
     if args.video:
-        process_video(args.outpath, args.video, args.distortion, vary_distortion = True)
+        process_video(args.outpath, args.video, args.distortion, vary_distortion = args.vary_distortion, randomize_rgb = args.randomize_rgb)
         print("Output video saved to " + args.outpath)
 
     if args.image:
@@ -202,7 +213,7 @@ if __name__ == "__main__":
         print("Output image saved to " + args.outpath)
 
     if args.folder:
-        process_folder(args.folder, args.outpath, args.distortion, vary_distortion=True)
+        process_folder(args.folder, args.outpath, args.distortion, vary_distortion = args.vary_distortion, randomize_rgb = args.randomize_rgb)
         print("Output images saved to " + args.outpath)
 
     # convert the images in args.outpath to a video
