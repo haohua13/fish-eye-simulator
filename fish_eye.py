@@ -7,38 +7,50 @@ import argparse
 import os
 import cv2
 from images_to_video import images_to_video
+import re
+import random
 
+def extract_numeric_part(filename):
+    match = re.search(r'\d+', filename)
+    if match:
+        return int(match.group())
+    else:
+        return float('inf')  # Return a large number for non-numeric filenames
 
-def process_folder(input_folder, output_folder, distortion, vary_distortion = False):
-    # get the list of image files in the directory in sorted order  
+def process_folder(input_folder, output_folder, distortion, vary_distortion=False, randomize_rgb=False):
+    # get the list of image files in the directory in sorted order
     images = [img for img in os.listdir(input_folder)]
-    images = sorted(images, key=lambda x: int(x.split('.')[0]))
+    images = sorted(images, key=lambda x: extract_numeric_part(x))
     distortion_value = -1
-    distortion_step = 0.1
+    distortion_step = 0.2
     end_distortion = 1
     flag = False
     iterator = 0
     for image in images:
         imgobj = imageio.imread(os.path.join(input_folder, image))
         iterator += 1
+        # randomize RGB/BGR for each image frame
+        if randomize_rgb:
+            imgobj = cv2.cvtColor(imgobj, random.choice([cv2.COLOR_BGR2RGB, cv2.COLOR_RGB2BGR]))
         if vary_distortion:
-            # vary the distortion coefficient for each frame starting from distortion_value to end_distortion, and then repeat the process
-            if distortion_value < end_distortion and not(flag):
+            if flag:
                 distortion_value += distortion_step
-                flag = False
-            elif distortion_value == end_distortion or flag:
-                distortion_value -= distortion_step
-                flag = True
-                if distortion_value <=-1:
+                if distortion_value >= 1:
                     flag = False
+            else:
+                distortion_value -= distortion_step
+                if distortion_value <= -1:
+                    flag = True
         else:
-            # call fish function here
-            distorted_frame = fish(imgobj, distortion)
-        # write the distorted frame to the output folder
-        cv2.imwrite(output_folder + str(iterator) + ".png", distorted_frame)
+            distortion_value = distortion
+
+        # Call fish function here
+        distorted_frame = fish(imgobj, distortion_value)
+        # Write the distorted frame to the output folder
+        cv2.imwrite(os.path.join(output_folder, f"{iterator}.png"), distorted_frame)
     
 
-def process_video(new_video_path, input_video, distortion, fps = 30, vary_distortion = True):
+def process_video(new_video_path, input_video, distortion, fps = 30, vary_distortion = True, randomize_rgb = False):
     # use the resolution of the input video
     cap = cv2.VideoCapture(input_video)
     resolution = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
@@ -54,20 +66,22 @@ def process_video(new_video_path, input_video, distortion, fps = 30, vary_distor
         if not ret:
             break
         if vary_distortion:
-            # vary the distortion coefficient for each frame starting from distortion_value to end_distortion, and then repeat the process
-            if distortion_value < end_distortion and not(flag):
+            if flag:
                 distortion_value += distortion_step
-                flag = False
-            elif distortion_value == end_distortion or flag:
-                distortion_value -= distortion_step
-                flag = True
-                if distortion_value <=-1:
+                if distortion_value >= 1:
                     flag = False
+            else:
+                distortion_value -= distortion_step
+                if distortion_value <= -1:
+                    flag = True
         else:
             distortion_value = distortion  # Use fixed distortion value
-            
+        # randomize RGB/BGR for each image frame
+        if randomize_rgb:
+            frame = cv2.cvtColor(frame, random.choice([cv2.COLOR_BGR2RGB, cv2.COLOR_RGB2BGR]))
+
         # call fish function here
-        distorted_frame = fish(imgobj, distortion)
+        distorted_frame = fish(frame, distortion_value)
         # write the distorted frame to the new video
         # video.write(distorted_frame)
         cv2.imwrite(new_video_path + str(iterator) + ".png", distorted_frame)
@@ -188,12 +202,14 @@ if __name__ == "__main__":
         print("Output image saved to " + args.outpath)
 
     if args.folder:
-        process_folder(args.folder, args.outpath, args.distortion)
+        process_folder(args.folder, args.outpath, args.distortion, vary_distortion=True)
         print("Output images saved to " + args.outpath)
 
     # convert the images in args.outpath to a video
-    current_directory = os.getcwd()  # Get current directory
-    images_directory = os.path.join(current_directory, args.outpath)  # Assuming images are in 'images' subdirectory´
+    current_directory = os.getcwd()  # get current directory
+    images_directory = os.path.join(current_directory, args.outpath) 
+
+
     # check if mp4 file already exists, if so, create a new one
     output_video_path = os.path.join(current_directory, 'project.mp4')
     if os.path.exists(output_video_path):
@@ -201,6 +217,7 @@ if __name__ == "__main__":
         while os.path.exists(output_video_path):
             output_video_path = os.path.join(current_directory, 'project' + str(i) + '.mp4')
             i += 1
+
     images_to_video(images_directory, output_video_path)
     
 
