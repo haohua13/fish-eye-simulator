@@ -1,7 +1,7 @@
 import cv2
 import os
 
-def images_to_video(image_folder, video_name, fps = 30, video_format = 'DIVX'):
+def images_to_video(image_folder, video_name, fps = 10, video_format = 'DIVX'):
     # get the list of image files in the directory in sorted order
     images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
     images = sorted(images, key=lambda x: int(x.split('.')[0]))

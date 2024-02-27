@@ -21,9 +21,9 @@ def process_folder(input_folder, output_folder, distortion, vary_distortion=Fals
     # get the list of image files in the directory in sorted order
     images = [img for img in os.listdir(input_folder)]
     images = sorted(images, key=lambda x: extract_numeric_part(x))
-    distortion_value = -1
+    distortion_value = -1.2
     distortion_step = 0.2
-    end_distortion = 1
+    distortion_limit = 1.2
     flag = False
     iterator = 0
     for image in images:
@@ -32,14 +32,16 @@ def process_folder(input_folder, output_folder, distortion, vary_distortion=Fals
         # randomize RGB/BGR for each image frame
         if randomize_rgb:
             imgobj = cv2.cvtColor(imgobj, random.choice([cv2.COLOR_BGR2RGB, cv2.COLOR_RGB2BGR]))
+        else:
+            imgobj = cv2.cvtColor(imgobj, cv2.COLOR_BGR2RGB)
         if vary_distortion:
             if flag:
                 distortion_value += distortion_step
-                if distortion_value >= 1:
+                if distortion_value >= distortion_limit:
                     flag = False
             else:
                 distortion_value -= distortion_step
-                if distortion_value <= -1:
+                if distortion_value <= -distortion_limit:
                     flag = True
         else:
             distortion_value = distortion
