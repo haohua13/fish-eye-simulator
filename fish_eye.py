@@ -24,6 +24,11 @@ def process_folder(input_folder, output_folder, distortion, vary_distortion=Fals
     distortion_value = -1.2
     distortion_step = 0.2
     distortion_limit = 1.2
+    # no distortion
+    distortion_value = 0
+    distortion_step = 0
+    distortion_limit = 0
+
     flag = False
     iterator = 0
     for image in images:

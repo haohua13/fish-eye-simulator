@@ -16,11 +16,11 @@ Example usage:
 python fish_eye.py -v input_video.avi -o output_images_folder/
 
 python fish_eye.py -f image_folder -o output_images_folder/
+
 -vary -randomize
 
 
 Video example with randomize RGB/BGR effects
-
 
 [<img src="https://github.com/haohua13/fish-eye-simulator/blob/main/test1.png" width="30%">](https://github.com/haohua13/fish-eye-simulator/assets/57109967/7c25519b-72d6-498c-aea7-c2ae8b2f3873)
 
